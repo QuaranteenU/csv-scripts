@@ -60,7 +60,6 @@ class Event(object):
 order = []
 cur_tz = 24
 cur_time = datetime.strptime('2020-05-20 02:00PM', '%Y-%m-%d %I:%M%p')
-# first pass
 for item in data:
   if item['Average Timezone'] != cur_tz:
     cur_tz = item['Average Timezone']
@@ -73,9 +72,16 @@ for item in data:
   cur_time = cur_time + timedelta(seconds=item['Seconds'])
 
 pretty_order = [{'School': item.school, 'Start Time': item.startTime.strftime('%Y-%m-%d %I:%M:%S %p')} for item in order]
+print("Schedule UTC")
 print(tabulate(pretty_order, headers="keys"))
-haveConflicts = len(order) != len(set(order))
 
+# print event times in local timezone
+pretty_order = [{'School': item.school, 'Start Time': (item.startTime + timedelta(hours=item.timezone)).strftime('%Y-%m-%d %I:%M:%S %p')} for item in order]
+print("\nSchedule localized")
+print(tabulate(pretty_order, headers="keys"))
+
+# check for conflicts
+haveConflicts = len(order) != len(set(order))
 print('\n--> Conflicts?', haveConflicts)
 if haveConflicts:
   seen = {}

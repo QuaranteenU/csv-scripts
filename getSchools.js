@@ -6,7 +6,7 @@ const rawdata = fs.readFileSync('university_map.json');
 const university_map = JSON.parse(rawdata);
 
 let rsvps = []
-fs.createReadStream("MASTER RSVP.csv")
+fs.createReadStream("data/MASTER RSVP.csv")
   .pipe(csv())
   .on("data", (data) => rsvps.push(data))
   .on("end", () => {
@@ -24,7 +24,7 @@ fs.createReadStream("MASTER RSVP.csv")
     
     parseAsync(rsvps, opts)
       .then(csv => {
-        fs.writeFile('MASTER RSVP with schools.csv', csv, 'utf8', function (err) {
+        fs.writeFile('data/MASTER RSVP with schools.csv', csv, 'utf8', function (err) {
           if (err) {
             console.log('Some error occured - file either not saved or corrupted file saved.');
           } else{

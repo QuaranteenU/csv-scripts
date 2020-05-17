@@ -4,11 +4,11 @@ const { parseAsync } = require('json2csv');
 
 let interests = [];
 let rsvps = []
-fs.createReadStream("interest.csv")
+fs.createReadStream("data/interest.csv")
   .pipe(csv())
   .on("data", (data) => interests.push(data))
   .on("end", () => {
-    fs.createReadStream("rsvps.csv")
+    fs.createReadStream("data/rsvps.csv")
       .pipe(csv())
       .on("data", (data) => rsvps.push(data))
       .on("end", () => {
@@ -36,7 +36,7 @@ fs.createReadStream("interest.csv")
          
         parseAsync(rsvps, opts)
           .then(csv => {
-            fs.writeFile('rsvpsWithTZ.csv', csv, 'utf8', function (err) {
+            fs.writeFile('data/rsvpsWithTZ.csv', csv, 'utf8', function (err) {
               if (err) {
                 console.log('Some error occured - file either not saved or corrupted file saved.');
               } else{

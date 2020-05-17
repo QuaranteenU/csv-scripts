@@ -1,10 +1,11 @@
 import csv
-from operator import itemgetter as i
+from operator import itemgetter
 from functools import cmp_to_key
 from datetime import datetime, timedelta
 from tabulate import tabulate
 import bisect
 from functools import total_ordering
+from collections import defaultdict
 
 def cmp(x, y):
   """
@@ -21,7 +22,7 @@ def cmp(x, y):
 
 def multikeysort(items, columns):
   comparers = [
-    ((i(col[1:].strip()), -1) if col.startswith('-') else (i(col.strip()), 1))
+    ((itemgetter(col[1:].strip()), -1) if col.startswith('-') else (itemgetter(col.strip()), 1))
     for col in columns
   ]
   def comparer(left, right):
@@ -41,9 +42,14 @@ data = multikeysort(data, ['-Average Timezone', 'School'])
 
 @total_ordering
 class Event(object):
-  def __init__(self, school, startTime):
+  def __init__(self, school, startTime, length, timezone):
     self.school = school
     self.startTime = startTime
+    self.length = length
+    self.timezone = timezone
+
+  def __hash__(self):
+    return hash(self.startTime.strftime('%Y-%m-%d %I:%M:%S %p'))
 
   def __lt__(self, other):
     return self.startTime < other.startTime
@@ -53,17 +59,33 @@ class Event(object):
 
 order = []
 cur_tz = 24
-cur_time = None
+cur_time = datetime.strptime('2020-05-20 02:00PM', '%Y-%m-%d %I:%M%p')
+# first pass
 for item in data:
   if item['Average Timezone'] != cur_tz:
     cur_tz = item['Average Timezone']
-    cur_time = datetime.strptime('2020-05-22 02:00PM', '%Y-%m-%d %I:%M%p')
+    reset_time = datetime.strptime('2020-05-22 02:00PM', '%Y-%m-%d %I:%M%p')
+    cur_time = cur_time if reset_time < cur_time else reset_time
 
   order_time = cur_time - timedelta(hours=cur_tz)
-  event = Event(item['School'], order_time)
+  event = Event(item['School'], order_time, item['Seconds'], item['Average Timezone'])
   bisect.insort(order, event)
   cur_time = cur_time + timedelta(seconds=item['Seconds'])
 
-#order = multikeysort(order, ['Start Time'])
 pretty_order = [{'School': item.school, 'Start Time': item.startTime.strftime('%Y-%m-%d %I:%M:%S %p')} for item in order]
 print(tabulate(pretty_order, headers="keys"))
+haveConflicts = len(order) != len(set(order))
+
+print('\n--> Conflicts?', haveConflicts)
+if haveConflicts:
+  seen = {}
+  dupes = []
+  for x in order:
+    if x not in seen:
+      seen[x] = 1
+    else:
+      if seen[x] == 1:
+        dupes.append(x)
+      seen[x] += 1
+
+  print(dupes)

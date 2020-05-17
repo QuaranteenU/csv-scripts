@@ -3,6 +3,8 @@ from operator import itemgetter as i
 from functools import cmp_to_key
 from datetime import datetime, timedelta
 from tabulate import tabulate
+import bisect
+from functools import total_ordering
 
 def cmp(x, y):
   """
@@ -37,6 +39,18 @@ with open('data/school timezones.csv') as f:
 data = multikeysort(data, ['-Average Timezone', 'School'])
 #print(tabulate(data, headers="keys"))
 
+@total_ordering
+class Event(object):
+  def __init__(self, school, startTime):
+    self.school = school
+    self.startTime = startTime
+
+  def __lt__(self, other):
+    return self.startTime < other.startTime
+
+  def __eq__(self, other):
+    return self.startTime == other.startTime
+
 order = []
 cur_tz = 24
 cur_time = None
@@ -46,12 +60,10 @@ for item in data:
     cur_time = datetime.strptime('2020-05-22 02:00PM', '%Y-%m-%d %I:%M%p')
 
   order_time = cur_time - timedelta(hours=cur_tz)
-  order.append({
-    'School': item['School'],
-    'Start Time': order_time
-  })
+  event = Event(item['School'], order_time)
+  bisect.insort(order, event)
   cur_time = cur_time + timedelta(seconds=item['Seconds'])
 
-order = multikeysort(order, ['Start Time'])
-pretty_order = [{'School': item['School'], 'Start Time': item['Start Time'].strftime('%Y-%m-%d %I:%M:%S %p')} for item in order]
+#order = multikeysort(order, ['Start Time'])
+pretty_order = [{'School': item.school, 'Start Time': item.startTime.strftime('%Y-%m-%d %I:%M:%S %p')} for item in order]
 print(tabulate(pretty_order, headers="keys"))

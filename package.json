@@ -1,0 +1,11 @@
+{
+  "name": "csv-scripts",
+  "version": "1.0.0",
+  "description": "Scripts for merging our CSVs",
+  "author": "Rudhra Raveendran",
+  "license": "MIT",
+  "dependencies": {
+    "csv-parser": "^2.3.2",
+    "json2csv": "^5.0.1"
+  }
+}

@@ -10,17 +10,10 @@ import itertools
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 
+PRINT_TABULATE = False
+
+# from https://stackoverflow.com/a/1144405/3325942
 def cmp(x, y):
-  """
-  Replacement for built-in function cmp that was removed in Python 3
-
-  Compare the two objects x and y and return an integer according to
-  the outcome. The return value is negative if x < y, zero if x == y
-  and strictly positive if x > y.
-
-  https://portingguide.readthedocs.io/en/latest/comparisons.html#the-cmp-function
-  """
-
   return (x > y) - (x < y)
 
 def multikeysort(items, columns):
@@ -36,13 +29,13 @@ def multikeysort(items, columns):
     return next((result for result in comparer_iter if result), 0)
   return sorted(items, key=cmp_to_key(comparer))
 
+# load data then sort by descending timezone and ascending school within timezone
 with open('data/school timezones.csv', encoding="utf-8") as schoolTimezonesFile:
   data = [{k: v if k == "School" else float(v) for k, v in row.items()} for row in csv.DictReader(schoolTimezonesFile, skipinitialspace=True)]
-
-# sort data by descending timezone and ascending school within timezone
 data = multikeysort(data, ['-Average Timezone', 'School'])
 #print(tabulate(data, headers="keys"))
 
+# custom object so we can sort/hash events
 @total_ordering
 class Event(object):
   def __init__(self, school, startTime, length, timezone):
@@ -74,18 +67,21 @@ for item in data:
   bisect.insort(order, event)
   cur_time = cur_time + timedelta(seconds=item['Seconds'])
 
+# print school start times in UTC
 pretty_order = [{'School': item.school, 'Start Time': item.startTime.strftime('%Y-%m-%d %I:%M:%S %p')} for item in order]
-print("Schedule UTC")
-print(tabulate(pretty_order, headers="keys"))
+if PRINT_TABULATE:
+  print("Schedule UTC")
+  print(tabulate(pretty_order, headers="keys"))
 
-# print event times in local timezone
+# print school start times in local timezone
 pretty_order = [{'School': item.school, 'Start Time': (item.startTime + timedelta(hours=item.timezone)).strftime('%Y-%m-%d %I:%M:%S %p')} for item in order]
-print("\nSchedule localized")
-print(tabulate(pretty_order, headers="keys"))
+if PRINT_TABULATE:
+  print("\nSchedule localized")
+  print(tabulate(pretty_order, headers="keys"))
 
 # check for conflicts
 haveConflicts = len(order) != len(set(order))
-print('\n--> Conflicts?', haveConflicts)
+print('\n--> School Start Time Conflicts?', haveConflicts)
 if haveConflicts:
   seen = {}
   dupes = []
@@ -99,23 +95,29 @@ if haveConflicts:
 
   print(dupes)
 
-schoolToTimeMap = {}
-for item in order:
-  schoolToTimeMap[item.school] = item.startTime
-
+# now to order students
 with open('data/MASTER RSVP with schools.csv', encoding="utf-8") as rsvpFile:
   rsvps = [{k: v for k, v in row.items()} for row in csv.DictReader(rsvpFile, skipinitialspace=True)]
 emails = [x['Email Address'] for x in rsvps]
 
+schoolToTimeMap = {}
+for item in order:
+  schoolToTimeMap[item.school] = item.startTime
+
 schoolToStudentMap = defaultdict(list)
 for student in rsvps:
   school = 'Unknown' if student['School'] == '' else student['School']
-  schoolToStudentMap[school].append(student['Email Address'])
+  schoolToStudentMap[school].append({
+    'name': student['Your Full Name'],
+    'email': student['Email Address']
+  })
 
+# custom object so we can sort/hash students
 @total_ordering
 class StudentTime(object):
-  def __init__(self, name, startTime, timezone):
+  def __init__(self, name, email, startTime, timezone):
     self.name = name
+    self.email = email
     self.startTime = startTime
     self.timezone = timezone
 
@@ -130,15 +132,32 @@ class StudentTime(object):
 
 student_order = []
 for school in order:
-  students = sorted(schoolToStudentMap[school.school])
+  students = sorted(schoolToStudentMap[school.school], key = lambda i: i['name'])
   cur_time = schoolToTimeMap[school.school]
   for student in students:
-    bisect.insort(student_order, StudentTime(student, cur_time, school.timezone))
+    bisect.insort(student_order, StudentTime(student['name'], student['email'], cur_time, school.timezone))
     cur_time = cur_time + timedelta(seconds=30)
 
+# check for conflicts
+haveConflicts = len(student_order) != len(set(student_order))
+print('\n--> Student Start Time Conflicts?', haveConflicts)
+if haveConflicts:
+  seen = {}
+  dupes = []
+  for x in student_order:
+    if x not in seen:
+      seen[x] = 1
+    else:
+      if seen[x] == 1:
+        dupes.append(x)
+      seen[x] += 1
+
+  print(dupes)
+
 pretty_order = [{'Name': item.name, 'Start Time': item.startTime.strftime('%Y-%m-%d %I:%M:%S %p')} for item in student_order]
-print("\nStudent Schedule UTC")
-print(tabulate(pretty_order, headers="keys"))
+if PRINT_TABULATE:
+  print("\nStudent Schedule UTC")
+  print(tabulate(pretty_order, headers="keys"))
 
 # save utc schedule
 with open('data/student schedule utc.csv', 'w', encoding="utf-8", newline='') as studentScheduleFile:    
@@ -146,15 +165,18 @@ with open('data/student schedule utc.csv', 'w', encoding="utf-8", newline='') as
   writer = csv.DictWriter(studentScheduleFile, fieldnames=csvFields)    
   writer.writeheader()
   writer.writerows(pretty_order)
+  print('\n--> Saved student schedule utc.csv!')
 
 pretty_order = [{'Name': item.name, 'Start Time': (item.startTime + timedelta(hours=item.timezone)).strftime('%Y-%m-%d %I:%M:%S %p')} for item in student_order]
-print("\nStudent Schedule localized")
-print(tabulate(pretty_order, headers="keys"))
+if PRINT_TABULATE:
+  print("\nStudent Schedule localized")
+  print(tabulate(pretty_order, headers="keys"))
 
-print('\nOrdered Students: %s, Original Students: %s' % (len(student_order), len(emails)))
-ordered_emails = [x.name for x in student_order]
-missing = [x for x in emails if x not in ordered_emails]
-print(missing)
+print('\n--> Missing students?', len(student_order) != len(emails))
+if len(student_order) != len(emails):
+  ordered_emails = [x.email for x in student_order]
+  missing = [x for x in emails if x not in ordered_emails]
+  print(missing)
 
 # visualize
 x = [x.startTime for x in student_order]

@@ -13,7 +13,7 @@ fs.createReadStream("data/MASTER RSVP with schools.csv")
     const map = {};
     const counter = {}
     rsvps.forEach(c => {
-      if (c['School'] === '') c['School'] = 'Unknown';
+      if (c['School'] === '') c['School'] = 'Quaranteen University';
 
       if (!Number.isNaN(parseInt(c['Time Zone']))) {
         if (map.hasOwnProperty(c['School'])) {

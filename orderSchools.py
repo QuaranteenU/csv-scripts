@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 
 PRINT_TABULATE = False
+SHOW_VIS = True
 
 # from https://stackoverflow.com/a/1144405/3325942
 def cmp(x, y):
@@ -106,10 +107,11 @@ for item in order:
 
 schoolToStudentMap = defaultdict(list)
 for student in rsvps:
-  school = 'Unknown' if student['School'] == '' else student['School']
+  school = 'Quaranteen University' if student['School'] == '' else student['School']
   schoolToStudentMap[school].append({
     'name': student['Your Full Name'],
-    'email': student['Email Address']
+    'email': student['Email Address'],
+    'timezone': student['Time Zone']
   })
 
 # custom object so we can sort/hash students
@@ -135,7 +137,11 @@ for school in order:
   students = sorted(schoolToStudentMap[school.school], key = lambda i: i['name'])
   cur_time = schoolToTimeMap[school.school]
   for student in students:
-    bisect.insort(student_order, StudentTime(student['name'], student['email'], cur_time, school.timezone))
+    try:
+      studentTz = int(student['timezone'])
+    except ValueError:
+      studentTz = school.timezone # if student doesn't have a timezone, use school timezone to approx
+    bisect.insort(student_order, StudentTime(student['name'], student['email'], cur_time, studentTz))
     cur_time = cur_time + timedelta(seconds=30)
 
 # check for conflicts
@@ -154,14 +160,15 @@ if haveConflicts:
 
   print(dupes)
 
-pretty_order = [{'Name': item.name, 'Start Time': item.startTime.strftime('%Y-%m-%d %I:%M:%S %p')} for item in student_order]
+pretty_order = [{'Name': item.name, 'Email': item.email, 'Time Zone': item.timezone, 'Start Time': item.startTime.strftime('%Y-%m-%d %I:%M:%S %p')} for item in student_order]
 if PRINT_TABULATE:
+  print_order = [{'Name': item['Name'], 'Start Time': item['Start Time']} for item in pretty_order]
   print("\nStudent Schedule UTC")
-  print(tabulate(pretty_order, headers="keys"))
+  print(tabulate(print_order, headers="keys"))
 
-# save utc schedule
+# save utc student schedule
 with open('data/student schedule utc.csv', 'w', encoding="utf-8", newline='') as studentScheduleFile:    
-  csvFields = ['Name', 'Start Time']
+  csvFields = ['Name', 'Email', 'Time Zone', 'Start Time']
   writer = csv.DictWriter(studentScheduleFile, fieldnames=csvFields)    
   writer.writeheader()
   writer.writerows(pretty_order)
@@ -178,14 +185,16 @@ if len(student_order) != len(emails):
   missing = [x for x in emails if x not in ordered_emails]
   print(missing)
 
-# visualize
-x = [x.startTime for x in student_order]
-y = [1 for x in student_order]
-date_fmt = mdates.DateFormatter('%I:%M:%S')
-fig, ax = plt.subplots()
-plt.ylim(0, 2)
-plt.xlim(x[0],x[-1])
-ax.xaxis.set_major_formatter(date_fmt)
-ax.scatter(x, y)
-plt.grid(color='r', linestyle='-', linewidth=1)
-plt.show()
+if SHOW_VIS:
+  # visualize
+  x = [x.startTime for x in student_order]
+  y = [1 for x in student_order]
+  date_fmt = mdates.DateFormatter('%I:%M:%S')
+  fig, ax = plt.subplots()
+  plt.title('Student Schedule UTC')
+  plt.ylim(0, 2)
+  plt.xlim(x[0],x[-1])
+  ax.xaxis.set_major_formatter(date_fmt)
+  ax.scatter(x, y)
+  plt.grid(color='r', linestyle='-', linewidth=1)
+  plt.show()

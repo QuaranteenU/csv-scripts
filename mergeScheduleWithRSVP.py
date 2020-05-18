@@ -1,14 +1,14 @@
 import csv
-from datetime import datetime, timedelta
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
+from datetime import datetime, timedelta
 from tabulate import tabulate
 
 PRINT_TABULATE = False
 SHOW_VIS = False
 
 # load clustered schedule (make sure you go make that first in google sheets)
-with open("data/student schedule utc.csv", encoding="utf-8") as file:
+with open("data/student schedule utc clustered.csv", encoding="utf-8") as file:
     data = [
         {k: v for k, v in row.items()}
         for row in csv.DictReader(file, skipinitialspace=True)
@@ -81,7 +81,7 @@ schoolOrder = []
 cur_school = "not a real school"
 for entry in data:
     student = emailToRow[entry["Email"]]
-    school = student["School"]
+    school = student["School"] if student["School"] != '' else 'Unknown'
     if school != cur_school:
         schoolToTime[school] = entry["Start Time"]
         cur_school = school
@@ -97,7 +97,7 @@ for entry in data:
 schoolOrder = sorted(schoolOrder, key=lambda i: i["Start Time"])
 schoolOrder = [
     {
-        "School": s["School"],
+        "School": s["School"] if s["School"] != '' else 'Unknown',
         "Start Time": s["Start Time"].strftime("%Y-%m-%d %I:%M:%S %p"),
     }
     for s in schoolOrder
@@ -117,3 +117,22 @@ with open(
 with open("data/school-schedule.html", "w", encoding="utf-8") as schoolScheduleHTMLFile:
     schoolScheduleHTMLFile.write(tabulate(schoolOrder, headers="keys", tablefmt="html"))
     print("\n--> Saved FINAL school schedule utc HTML!")
+
+# save final dataset
+finalData = []
+for item in data:
+    student = emailToRow[item['Email']]
+    student['Start Time UTC'] = item['Start Time']
+    school = student["School"] if student["School"] != '' else 'Unknown'
+    student['School Start Time UTC'] = schoolToTime[school]
+    student['Approx Time Zone'] = item['Time Zone']
+    finalData.append(student)
+
+with open(
+    "data/FINAL student schedule utc.csv", "w", encoding="utf-8", newline=""
+) as studentScheduleFile:
+    csvFields = list(finalData[0].keys())
+    writer = csv.DictWriter(studentScheduleFile, fieldnames=csvFields)
+    writer.writeheader()
+    writer.writerows(finalData)
+    print("\n--> Saved FINAL student schedule utc.csv!")

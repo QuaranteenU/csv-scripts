@@ -1,14 +1,14 @@
 import csv
+import bisect
+import itertools
+import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
 from operator import itemgetter
 from functools import cmp_to_key
 from datetime import datetime, timedelta
 from tabulate import tabulate
-import bisect
 from functools import total_ordering
 from collections import defaultdict
-import itertools
-import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
 
 PRINT_TABULATE = False
 SHOW_VIS = True

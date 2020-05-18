@@ -125,6 +125,7 @@ for item in data:
     student['Start Time UTC'] = item['Start Time']
     school = student["School"] if student["School"] != '' else 'Unknown'
     student['School Start Time UTC'] = schoolToTime[school]
+    student["School"] = school
     student['Approx Time Zone'] = item['Time Zone']
     finalData.append(student)
 

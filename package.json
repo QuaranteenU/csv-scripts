@@ -5,7 +5,7 @@
   "author": "Rudhra Raveendran",
   "license": "MIT",
   "scripts": {
-    "format": "prettier --write \"**/*.{js,jsx,json,md}\""
+    "format": "prettier --write \"**/*.{js,jsx,json,md}\" && black ."
   },
   "dependencies": {
     "csv-parser": "^2.3.2",

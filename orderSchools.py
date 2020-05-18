@@ -7,6 +7,8 @@ import bisect
 from functools import total_ordering
 from collections import defaultdict
 import itertools
+import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
 
 def cmp(x, y):
   """
@@ -144,6 +146,18 @@ with open('data/student schedule utc.csv', 'w', encoding="utf-8", newline='') as
     writer = csv.DictWriter(studentScheduleFile, fieldnames=csvFields)    
     writer.writeheader()
     writer.writerows(pretty_order)
+
+# visualize
+x = [x.startTime for x in student_order]
+y = [1 for x in student_order]
+date_fmt = mdates.DateFormatter('%I:%M:%S')
+fig, ax = plt.subplots()
+plt.ylim(0, 2)
+plt.xlim(x[0],x[-1])
+ax.xaxis.set_major_formatter(date_fmt)
+ax.scatter(x, y)
+plt.grid(color='r', linestyle='-', linewidth=1)
+plt.show()
 
 pretty_order = [{'Name': item.name, 'Start Time': (item.startTime + timedelta(hours=item.timezone)).strftime('%Y-%m-%d %I:%M:%S %p')} for item in student_order]
 print("\nStudent Schedule localized")

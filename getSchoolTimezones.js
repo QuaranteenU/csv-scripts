@@ -15,7 +15,7 @@ fs.createReadStream("data/MASTER RSVP with schools.csv")
     rsvps.forEach(c => {
       if (c['School'] === '') c['School'] = 'Unknown';
 
-      if (parseInt(c['Time Zone'])) {
+      if (!Number.isNaN(parseInt(c['Time Zone']))) {
         if (map.hasOwnProperty(c['School'])) {
           map[c['School']].push(parseInt(c['Time Zone']));
         } else {

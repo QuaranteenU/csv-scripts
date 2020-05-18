@@ -142,10 +142,19 @@ print(tabulate(pretty_order, headers="keys"))
 
 # save utc schedule
 with open('data/student schedule utc.csv', 'w', encoding="utf-8", newline='') as studentScheduleFile:    
-    csvFields = ['Name', 'Start Time']
-    writer = csv.DictWriter(studentScheduleFile, fieldnames=csvFields)    
-    writer.writeheader()
-    writer.writerows(pretty_order)
+  csvFields = ['Name', 'Start Time']
+  writer = csv.DictWriter(studentScheduleFile, fieldnames=csvFields)    
+  writer.writeheader()
+  writer.writerows(pretty_order)
+
+pretty_order = [{'Name': item.name, 'Start Time': (item.startTime + timedelta(hours=item.timezone)).strftime('%Y-%m-%d %I:%M:%S %p')} for item in student_order]
+print("\nStudent Schedule localized")
+print(tabulate(pretty_order, headers="keys"))
+
+print('\nOrdered Students: %s, Original Students: %s' % (len(student_order), len(emails)))
+ordered_emails = [x.name for x in student_order]
+missing = [x for x in emails if x not in ordered_emails]
+print(missing)
 
 # visualize
 x = [x.startTime for x in student_order]
@@ -158,12 +167,3 @@ ax.xaxis.set_major_formatter(date_fmt)
 ax.scatter(x, y)
 plt.grid(color='r', linestyle='-', linewidth=1)
 plt.show()
-
-pretty_order = [{'Name': item.name, 'Start Time': (item.startTime + timedelta(hours=item.timezone)).strftime('%Y-%m-%d %I:%M:%S %p')} for item in student_order]
-print("\nStudent Schedule localized")
-print(tabulate(pretty_order, headers="keys"))
-
-print('\nOrdered Students: %s, Original Students: %s' % (len(student_order), len(emails)))
-ordered_emails = [x.name for x in student_order]
-missing = [x for x in emails if x not in ordered_emails]
-print(missing)

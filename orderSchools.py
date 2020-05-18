@@ -138,6 +138,13 @@ pretty_order = [{'Name': item.name, 'Start Time': item.startTime.strftime('%Y-%m
 print("\nStudent Schedule UTC")
 print(tabulate(pretty_order, headers="keys"))
 
+# save utc schedule
+with open('data/student schedule utc.csv', 'w', encoding="utf-8", newline='') as studentScheduleFile:    
+    csvFields = ['Name', 'Start Time']
+    writer = csv.DictWriter(studentScheduleFile, fieldnames=csvFields)    
+    writer.writeheader()
+    writer.writerows(pretty_order)
+
 pretty_order = [{'Name': item.name, 'Start Time': (item.startTime + timedelta(hours=item.timezone)).strftime('%Y-%m-%d %I:%M:%S %p')} for item in student_order]
 print("\nStudent Schedule localized")
 print(tabulate(pretty_order, headers="keys"))

@@ -6,6 +6,7 @@ from tabulate import tabulate
 import bisect
 from functools import total_ordering
 from collections import defaultdict
+import itertools
 
 def cmp(x, y):
   """
@@ -33,8 +34,8 @@ def multikeysort(items, columns):
     return next((result for result in comparer_iter if result), 0)
   return sorted(items, key=cmp_to_key(comparer))
 
-with open('data/school timezones.csv') as f:
-  data = [{k: v if k == "School" else float(v) for k, v in row.items()} for row in csv.DictReader(f, skipinitialspace=True)]
+with open('data/school timezones.csv', encoding="utf-8") as schoolTimezonesFile:
+  data = [{k: v if k == "School" else float(v) for k, v in row.items()} for row in csv.DictReader(schoolTimezonesFile, skipinitialspace=True)]
 
 # sort data by descending timezone and ascending school within timezone
 data = multikeysort(data, ['-Average Timezone', 'School'])
@@ -95,3 +96,53 @@ if haveConflicts:
       seen[x] += 1
 
   print(dupes)
+
+schoolToTimeMap = {}
+for item in order:
+  schoolToTimeMap[item.school] = item.startTime
+
+with open('data/MASTER RSVP with schools.csv', encoding="utf-8") as rsvpFile:
+  rsvps = [{k: v for k, v in row.items()} for row in csv.DictReader(rsvpFile, skipinitialspace=True)]
+emails = [x['Email Address'] for x in rsvps]
+
+schoolToStudentMap = defaultdict(list)
+for student in rsvps:
+  school = 'Unknown' if student['School'] == '' else student['School']
+  schoolToStudentMap[school].append(student['Email Address'])
+
+@total_ordering
+class StudentTime(object):
+  def __init__(self, name, startTime, timezone):
+    self.name = name
+    self.startTime = startTime
+    self.timezone = timezone
+
+  def __hash__(self):
+    return hash(self.startTime.strftime('%Y-%m-%d %I:%M:%S %p'))
+
+  def __lt__(self, other):
+    return self.startTime < other.startTime
+
+  def __eq__(self, other):
+    return self.startTime == other.startTime
+
+student_order = []
+for school in order:
+  students = sorted(schoolToStudentMap[school.school])
+  cur_time = schoolToTimeMap[school.school]
+  for student in students:
+    bisect.insort(student_order, StudentTime(student, cur_time, school.timezone))
+    cur_time = cur_time + timedelta(seconds=30)
+
+pretty_order = [{'Name': item.name, 'Start Time': item.startTime.strftime('%Y-%m-%d %I:%M:%S %p')} for item in student_order]
+print("\nStudent Schedule UTC")
+print(tabulate(pretty_order, headers="keys"))
+
+pretty_order = [{'Name': item.name, 'Start Time': (item.startTime + timedelta(hours=item.timezone)).strftime('%Y-%m-%d %I:%M:%S %p')} for item in student_order]
+print("\nStudent Schedule localized")
+print(tabulate(pretty_order, headers="keys"))
+
+print('\nOrdered Students: %s, Original Students: %s' % (len(student_order), len(emails)))
+ordered_emails = [x.name for x in student_order]
+missing = [x for x in emails if x not in ordered_emails]
+print(missing)

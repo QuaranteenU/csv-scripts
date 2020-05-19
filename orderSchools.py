@@ -145,11 +145,12 @@ for student in rsvps:
 # custom object so we can sort/hash students
 @total_ordering
 class StudentTime(object):
-    def __init__(self, name, email, startTime, timezone):
+    def __init__(self, name, email, startTime, timezone, school):
         self.name = name
         self.email = email
         self.startTime = startTime
         self.timezone = timezone
+        self.school = school
 
     def __hash__(self):
         return hash(self.startTime.strftime("%Y-%m-%d %I:%M:%S %p"))
@@ -174,7 +175,9 @@ for school in order:
             )  # if student doesn't have a timezone, use school timezone to approx
         bisect.insort(
             student_order,
-            StudentTime(student["name"], student["email"], cur_time, studentTz),
+            StudentTime(
+                student["name"], student["email"], cur_time, studentTz, school.school
+            ),
         )
         cur_time = cur_time + timedelta(seconds=30)
 
@@ -198,6 +201,7 @@ pretty_order = [
     {
         "Name": item.name,
         "Email": item.email,
+        "School": item.school,
         "Time Zone": item.timezone,
         "Start Time": item.startTime.strftime("%Y-%m-%d %I:%M:%S %p"),
     }
@@ -215,7 +219,7 @@ if PRINT_TABULATE:
 with open(
     "data/student schedule utc.csv", "w", encoding="utf-8", newline=""
 ) as studentScheduleFile:
-    csvFields = ["Name", "Email", "Time Zone", "Start Time"]
+    csvFields = list(pretty_order[0].keys())
     writer = csv.DictWriter(studentScheduleFile, fieldnames=csvFields)
     writer.writeheader()
     writer.writerows(pretty_order)

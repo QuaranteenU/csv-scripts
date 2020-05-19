@@ -81,7 +81,7 @@ schoolOrder = []
 cur_school = "not a real school"
 for entry in data:
     student = emailToRow[entry["Email"]]
-    school = student["School"] if student["School"] != '' else 'Unknown'
+    school = student["School"] if student["School"] != "" else "Unknown"
     if school != cur_school:
         schoolToTime[school] = entry["Start Time"]
         cur_school = school
@@ -97,7 +97,7 @@ for entry in data:
 schoolOrder = sorted(schoolOrder, key=lambda i: i["Start Time"])
 schoolOrder = [
     {
-        "School": s["School"] if s["School"] != '' else 'Unknown',
+        "School": s["School"] if s["School"] != "" else "Unknown",
         "Start Time": s["Start Time"].strftime("%Y-%m-%d %I:%M:%S %p"),
     }
     for s in schoolOrder
@@ -121,12 +121,12 @@ with open("data/school-schedule.html", "w", encoding="utf-8") as schoolScheduleH
 # save final dataset
 finalData = []
 for item in data:
-    student = emailToRow[item['Email']]
-    student['Start Time UTC'] = item['Start Time']
-    school = student["School"] if student["School"] != '' else 'Unknown'
-    student['School Start Time UTC'] = schoolToTime[school]
+    student = emailToRow[item["Email"]]
+    student["Start Time UTC"] = item["Start Time"]
+    school = student["School"] if student["School"] != "" else "Unknown"
+    student["School Start Time UTC"] = schoolToTime[school]
     student["School"] = school
-    student['Approx Time Zone'] = item['Time Zone']
+    student["Approx Time Zone"] = item["Time Zone"]
     finalData.append(student)
 
 with open(

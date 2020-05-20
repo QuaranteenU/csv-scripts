@@ -82,14 +82,14 @@ try:
                 (
                     grad["Your Full Name"],
                     grad["Email Address"],
-                    grad["Phonetic spelling of your name"],
+                    grad["Phonetic spelling of your name"] if grad["Phonetic spelling of your name"] != '' else None,
                     grad["Your Degree"],
                     grad["Anything else you'd like to include?"],
                     grad["Your Major(s)"],
                     grad["Senior quote?"],
                     universityToId[grad["School"]],
                     ceremonyToId[grad["Ceremony Name"]],
-                    grad["UUID"],
+                    grad["UUID"] if grad["UUID"] != '' else None,
                     convertDate(grad["Start Time UTC"]),
                 ),
             )

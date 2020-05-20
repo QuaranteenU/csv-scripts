@@ -8,11 +8,6 @@ const fetchUUID = async username => {
     `https://api.ashcon.app/mojang/v2/user/${username}`,
     { method: "GET" }
   );
-  /*const resInternals = Object.getOwnPropertySymbols(response)[1];
-  if (response[resInternals].status !== 200) {
-    console.error('Forbiden!');
-    return [];
-  }*/
   const data = await response.json();
   return data;
 };
@@ -48,8 +43,6 @@ fs.createReadStream("data/final schedule.csv")
         }
       })
     );
-
-    //console.log(withUUIDs)
 
     const fields = Object.keys(withUUIDs[0]);
     const opts = { fields };

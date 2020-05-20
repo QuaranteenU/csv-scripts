@@ -97,8 +97,8 @@ for entry in data:
 schoolOrder = sorted(schoolOrder, key=lambda i: i["Start Time"])
 schoolOrder = [
     {
-        "School": s["School"] if s["School"] != "" else "Unknown",
         "Start Time": s["Start Time"].strftime("%Y-%m-%d %I:%M:%S %p"),
+        "School": s["School"] if s["School"] != "" else "Unknown",
     }
     for s in schoolOrder
 ]

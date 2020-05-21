@@ -1,13 +1,17 @@
 import csv
 import pymysql.cursors
+import os
 from datetime import datetime
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Connect to the database
 connection = pymysql.connect(
-    host="localhost",
-    user="root",
-    password="asdfasdf",
-    db="graduation",
+    host=os.getenv("SQL_HOST"),
+    user=os.getenv("SQL_USER"),
+    password=os.getenv("SQL_PASSWORD"),
+    db=os.getenv("SQL_DB"),
     charset="utf8mb4",
     autocommit=True,
     cursorclass=pymysql.cursors.DictCursor,
@@ -82,14 +86,16 @@ try:
                 (
                     grad["Your Full Name"],
                     grad["Email Address"],
-                    grad["Phonetic spelling of your name"] if grad["Phonetic spelling of your name"] != '' else None,
+                    grad["Phonetic spelling of your name"]
+                    if grad["Phonetic spelling of your name"] != ""
+                    else None,
                     grad["Your Degree"],
                     grad["Anything else you'd like to include?"],
                     grad["Your Major(s)"],
                     grad["Senior quote?"],
                     universityToId[grad["School"]],
                     ceremonyToId[grad["Ceremony Name"]],
-                    grad["UUID"] if grad["UUID"] != '' else None,
+                    grad["UUID"] if grad["UUID"] != "" else None,
                     convertDate(grad["Start Time UTC"]),
                 ),
             )

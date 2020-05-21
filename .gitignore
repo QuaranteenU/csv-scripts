@@ -1,4 +1,5 @@
 data
+audio
 node_modules
 *.csv
 *.txt

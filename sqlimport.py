@@ -56,7 +56,7 @@ try:
             cursor.execute(sql, (convertDate(ceremony[1]), ceremony[0]))
 
         # print new number of ceremonies
-        sql = "SELECT `*` FROM `ceremonies`"
+        sql = "SELECT `id`, `startTime`, `name` FROM `ceremonies`"
         cursor.execute(sql)
         ceremonies = cursor.fetchall()
         print("> ceremonies length:", len(ceremonies))
@@ -70,7 +70,7 @@ try:
             cursor.execute(sql, (school))
 
         # print new number of schools
-        sql = "SELECT `*` FROM `universities`"
+        sql = "SELECT `id`, `name` FROM `universities`"
         cursor.execute(sql)
         universities = cursor.fetchall()
         print("> universities length:", len(universities))

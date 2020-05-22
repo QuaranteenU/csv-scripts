@@ -6,6 +6,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from pydub import AudioSegment
 from pydub.playback import play
 from dotenv import load_dotenv
+from pprint import pprint
 
 load_dotenv()
 
@@ -13,7 +14,9 @@ sched = BackgroundScheduler()
 sched.start()
 
 
-def playAudio(filePath):
+def playAudio(filePath, name):
+    print("Playing audio for {}".format(name))
+    print("Next job:", sched.get_jobs()[0])
     audio = AudioSegment.from_mp3(filePath)
     play(audio)
 
@@ -41,7 +44,7 @@ connection = pymysql.connect(
 
 try:
     with connection.cursor() as cursor:
-        sql = "SELECT `*` FROM `graduates` WHERE NOT `graduated`"
+        sql = "SELECT `id`, `name`, `email`, `timeslot` FROM `graduates` WHERE NOT `graduated`"
         cursor.execute(sql)
         graduates = cursor.fetchall()
         for grad in graduates:
@@ -49,15 +52,17 @@ try:
             sched.add_job(
                 playAudio,
                 "date",
+                name=grad["name"],
                 run_date=grad["timeslot"],
-                args=["audio/{}.mp3".format(num)],
+                args=["audio/{}.mp3".format(num), grad["name"]],
             )
 finally:
     connection.close()
 
-sched.print_jobs()
+print("Next job:", sched.get_jobs()[0])
 running = True
 while running:
-    inp = input("Send K for kill: ")
-    if inp == "K" or inp == "k":
+    inp = input("=====\nEnter Q to quit\n=====\n")
+    if inp == "Q" or inp == "q":
         running = False
+        sched.shutdown(wait=False)

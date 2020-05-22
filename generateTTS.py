@@ -1,5 +1,5 @@
 import csv
-import os
+from pathlib import Path
 from gtts import gTTS
 from pydub import AudioSegment
 from io import BytesIO
@@ -10,24 +10,29 @@ with open("data/final schedule with uuids.csv", encoding="utf-8") as scheduleFil
         for row in csv.DictReader(scheduleFile, skipinitialspace=True)
     ]
 
+audioFileNameToQuote = {}
+audioFileNameToName = {}
 for grad in graduates:
-    if grad["Senior quote?"] != "":
-        speech = gTTS(text=grad["Senior quote?"], lang="en")
-        speech.save("audio/{} tts.mp3".format(grad["Audio File Name"]))
+    audioFileNameToQuote[grad["Audio File Name"]] = grad["Senior quote?"]
+    audioFileNameToName[grad["Audio File Name"]] = grad["Your Full Name"]
 
-        nameAudio = AudioSegment.from_mp3(
-            "audio/{}.mp3".format(grad["Audio File Name"])
-        )
-        ttsAudio = AudioSegment.from_mp3(
-            "audio/{} tts.mp3".format(grad["Audio File Name"])
-        )
+files = list(Path("audio").glob("*.mp3"))
+for file in files:
+    audioFileName = file.stem
+    quote = audioFileNameToQuote[audioFileName]
+    if quote != "":
+        speech = gTTS(text=quote, lang="en")
+        speech.save("audio/{} tts.mp3".format(audioFileName))
+
+        nameAudio = AudioSegment.from_mp3(file)
+        ttsAudio = AudioSegment.from_mp3("audio/{} tts.mp3".format(audioFileName))
         combinedAudio = nameAudio + ttsAudio
         finalAudio = combinedAudio[: min(29500, len(combinedAudio))]
-        finalAudio.export("audio/{}.mp3".format(grad["Audio File Name"]), format="mp3")
+        finalAudio.export("audio/{}.mp3".format(audioFileName), format="mp3")
 
-        os.remove("audio/{} tts.mp3".format(grad["Audio File Name"]))
+        Path("audio/{} tts.mp3".format(audioFileName)).unlink()
         print(
             "Generated for {} ({})".format(
-                grad["Your Full Name"], grad["Audio File Name"]
+                audioFileNameToName[audioFileName], audioFileName
             )
         )

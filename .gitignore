@@ -1,6 +1,7 @@
+node_modules
 data
 audio
-node_modules
+convert
 *.csv
 *.txt
 .env

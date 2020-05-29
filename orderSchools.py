@@ -65,11 +65,11 @@ class Event(object):
 
 order = []
 cur_tz = 24
-cur_time = datetime.strptime("2020-05-20 02:00PM", "%Y-%m-%d %I:%M%p")
+cur_time = datetime.strptime("2020-05-20 02:00PM", "%Y-%m-%d %I:%M%p") # MAKE THE DATA HERE CONFIGURABLE
 for item in data:
     if item["Average Timezone"] != cur_tz:
         cur_tz = item["Average Timezone"]
-        reset_time = datetime.strptime("2020-05-22 02:00PM", "%Y-%m-%d %I:%M%p")
+        reset_time = datetime.strptime("2020-05-22 02:00PM", "%Y-%m-%d %I:%M%p") # MAKE THE DATA HERE CONFIGURABLE
         cur_time = cur_time if reset_time < cur_time else reset_time
 
     order_time = cur_time - timedelta(hours=cur_tz)
@@ -120,7 +120,7 @@ if haveConflicts:
     print(dupes)
 
 # now to order students
-with open("data/MASTER RSVP with schools.csv", encoding="utf-8") as rsvpFile:
+with open("data/HS - Master RSVPs.csv", encoding="utf-8") as rsvpFile:
     rsvps = [
         {k: v for k, v in row.items()}
         for row in csv.DictReader(rsvpFile, skipinitialspace=True)
@@ -133,7 +133,7 @@ for item in order:
 
 schoolToStudentMap = defaultdict(list)
 for student in rsvps:
-    school = "Unknown" if student["School"] == "" else student["School"]
+    school = "Unknown" if student["Your school"] == "" else student["Your school"]
     schoolToStudentMap[school].append(
         {
             "name": student["Your Full Name"],

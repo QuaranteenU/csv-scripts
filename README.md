@@ -13,3 +13,13 @@ This is where we do the scheduling magic.
 ## Contributing
 
 Just make sure you use the autoformatter when you're done (`npm run format`). You'll have to install the Python dependencies (including the formatter, [black](https://github.com/psf/black)) separately from your `npm install`.
+
+ALTER TABLE table_name AUTO_INCREMENT = 1;
+or
+TRUNCATE TABLE graduates;
+
+# TODO
+- add the above sql calls when deleting so that auto increment is fixed
+- fix licenses on all repos here (GPL) and add all the fixins (contributors etc, check the Github community todolist)
+- make all scripts python and add a requirements.txt
+- make all scripts take command line input (either in args/flags or when running if no flags passed)/.env stuff so nothing is hard coded

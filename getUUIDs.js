@@ -13,7 +13,7 @@ const fetchUUID = async username => {
 };
 
 let rsvps = [];
-fs.createReadStream("data/final schedule.csv")
+fs.createReadStream("data/FINAL student schedule utc.csv")
   .pipe(csv())
   .on("data", data => rsvps.push(data))
   .on("end", async () => {

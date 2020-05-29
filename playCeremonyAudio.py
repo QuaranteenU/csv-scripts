@@ -44,7 +44,7 @@ connection = pymysql.connect(
 
 try:
     with connection.cursor() as cursor:
-        sql = "SELECT `id`, `name`, `email`, `timeslot` FROM `graduates` WHERE NOT `graduated`"
+        sql = "SELECT `id`, `name`, `email`, `timeslot` FROM `graduates` WHERE NOT `graduated` AND `ceremony`=24"
         cursor.execute(sql)
         graduates = cursor.fetchall()
         for grad in graduates:

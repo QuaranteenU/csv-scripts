@@ -28,7 +28,7 @@ if SHOW_VIS:
     plt.show()
 
 # load original RSVPs and make map keyed by email
-with open("data/MASTER RSVP with schools.csv", encoding="utf-8") as rsvpFile:
+with open("data/HS - Master RSVPs.csv", encoding="utf-8") as rsvpFile:
     rsvps = [
         {k: v for k, v in row.items()}
         for row in csv.DictReader(rsvpFile, skipinitialspace=True)
@@ -96,14 +96,14 @@ for entry in data:
 
 schoolOrder = sorted(schoolOrder, key=lambda i: i["Start Time"])
 schoolOrder = [
-    {
-        "Start Time": s["Start Time"].strftime("%Y-%m-%d %I:%M:%S %p"),
-        "School": s["School"] if s["School"] != "" else "Unknown",
-    }
+    [
+        s["Start Time"].strftime("%Y-%m-%dT%H:%M:%SZ"),
+        s["School"] if s["School"] != "" else "Quaranteen University Academy",
+    ]
     for s in schoolOrder
 ]
 
-# save utc school schedule
+"""# save utc school schedule
 with open(
     "data/FINAL school schedule utc.csv", "w", encoding="utf-8", newline=""
 ) as schoolScheduleCSVFile:
@@ -111,11 +111,12 @@ with open(
     writer = csv.DictWriter(schoolScheduleCSVFile, fieldnames=csvFields)
     writer.writeheader()
     writer.writerows(schoolOrder)
-    print("\n--> Saved FINAL school schedule utc CSV!")
+    print("\n--> Saved FINAL school schedule utc CSV!")"""
 
 # use tabulate to save html school schedule
 with open("data/school-schedule.html", "w", encoding="utf-8") as schoolScheduleHTMLFile:
-    schoolScheduleHTMLFile.write(tabulate(schoolOrder, headers="keys", tablefmt="html"))
+    #schoolScheduleHTMLFile.write(tabulate(schoolOrder, headers="keys", tablefmt="html"))
+    print(schoolOrder)
     print("\n--> Saved FINAL school schedule utc HTML!")
 
 # save final dataset

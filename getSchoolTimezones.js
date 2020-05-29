@@ -6,26 +6,26 @@ const roundHalf = num => Math.round(num * 2) / 2;
 const round2Dec = num => Math.round((num + Number.EPSILON) * 100) / 100;
 
 let rsvps = [];
-fs.createReadStream("data/MASTER RSVP with schools.csv")
+fs.createReadStream("data/HS - Master RSVPs.csv")
   .pipe(csv())
   .on("data", data => rsvps.push(data))
   .on("end", () => {
     const map = {};
     const counter = {};
     rsvps.forEach(c => {
-      if (c["School"] === "") c["School"] = "Unknown";
+      if (c["Your school"] === "") c["Your school"] = "Unknown";
 
       if (!Number.isNaN(parseInt(c["Time Zone"]))) {
-        if (map.hasOwnProperty(c["School"])) {
-          map[c["School"]].push(parseInt(c["Time Zone"]));
+        if (map.hasOwnProperty(c["Your school"])) {
+          map[c["Your school"]].push(parseInt(c["Time Zone"]));
         } else {
-          map[c["School"]] = [parseInt(c["Time Zone"])];
+          map[c["Your school"]] = [parseInt(c["Time Zone"])];
         }
       }
-      if (counter.hasOwnProperty(c["School"])) {
-        counter[c["School"]] += 1;
+      if (counter.hasOwnProperty(c["Your school"])) {
+        counter[c["Your school"]] += 1;
       } else {
-        counter[c["School"]] = 1;
+        counter[c["Your school"]] = 1;
       }
     });
 

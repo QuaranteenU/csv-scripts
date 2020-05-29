@@ -65,11 +65,15 @@ class Event(object):
 
 order = []
 cur_tz = 24
-cur_time = datetime.strptime("2020-05-20 02:00PM", "%Y-%m-%d %I:%M%p") # MAKE THE DATA HERE CONFIGURABLE
+cur_time = datetime.strptime(
+    "2020-05-20 02:00PM", "%Y-%m-%d %I:%M%p"
+)  # MAKE THE DATA HERE CONFIGURABLE
 for item in data:
     if item["Average Timezone"] != cur_tz:
         cur_tz = item["Average Timezone"]
-        reset_time = datetime.strptime("2020-05-22 02:00PM", "%Y-%m-%d %I:%M%p") # MAKE THE DATA HERE CONFIGURABLE
+        reset_time = datetime.strptime(
+            "2020-05-22 02:00PM", "%Y-%m-%d %I:%M%p"
+        )  # MAKE THE DATA HERE CONFIGURABLE
         cur_time = cur_time if reset_time < cur_time else reset_time
 
     order_time = cur_time - timedelta(hours=cur_tz)

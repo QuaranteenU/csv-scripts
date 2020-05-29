@@ -19,6 +19,7 @@ or
 TRUNCATE TABLE graduates;
 
 # TODO
+
 - add the above sql calls when deleting so that auto increment is fixed
 - fix licenses on all repos here (GPL) and add all the fixins (contributors etc, check the Github community todolist)
 - make all scripts python and add a requirements.txt

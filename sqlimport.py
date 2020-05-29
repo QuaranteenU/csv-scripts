@@ -14,7 +14,7 @@ connection = pymysql.connect(
     db=os.getenv("SQL_DB"),
     charset="utf8mb4",
     autocommit=True,
-    init_command="SET SESSION time_zone='+00:00'",
+    # init_command="SET SESSION time_zone='+00:00'",
     cursorclass=pymysql.cursors.DictCursor,
 )
 
@@ -34,22 +34,31 @@ def convertDate(date):
     return datetime.strptime(date, "%Y-%m-%d %I:%M:%S %p").strftime("%Y-%m-%d %H:%M:%S")
 
 
+IS_HIGH_SCHOOL = True
 try:
     with connection.cursor() as cursor:
-        # remove all graduates
-        sql = "DELETE FROM `graduates`"
+        # let us do the thing SQL
+        sql = "SET FOREIGN_KEY_CHECKS = 0"
         cursor.execute(sql)
-        print("> DELETED * FROM graduates")
+
+        # remove all ceremonies
+        sql = "TRUNCATE TABLE `ceremonies`"
+        cursor.execute(sql)
+        print("> DELETED * FROM ceremonies")
 
         # remove all universities
-        sql = "DELETE FROM `universities`"
+        sql = "TRUNCATE TABLE `universities`"
         cursor.execute(sql)
         print("> DELETED * FROM universities")
 
-        # remove all ceremonies
-        sql = "DELETE FROM `ceremonies`"
+        # remove all graduates
+        sql = "TRUNCATE TABLE `graduates`"
         cursor.execute(sql)
-        print("> DELETED * FROM ceremonies")
+        print("> DELETED * FROM graduates")
+
+        # back to safety
+        sql = "SET FOREIGN_KEY_CHECKS = 1"
+        cursor.execute(sql)
 
         # insert new ceremonies
         for ceremony in ceremonies:
@@ -81,7 +90,7 @@ try:
 
         # insert new graduates
         for grad in graduates:
-            sql = "INSERT INTO `graduates` (`name`, `email`, `pronunciation`, `degreeLevel`, `honors`, `major`, `seniorQuote`, `university`, `ceremony`, `uuid`, `timeslot`) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+            sql = "INSERT INTO `graduates` (`name`, `email`, `pronunciation`, `degreeLevel`, `honors`, `major`, `seniorQuote`, `university`, `ceremony`, `uuid`, `timeslot`, `isHighSchool`) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
             cursor.execute(
                 sql,
                 (
@@ -90,14 +99,15 @@ try:
                     grad["Phonetic spelling of your name"]
                     if grad["Phonetic spelling of your name"] != ""
                     else None,
-                    grad["Your Degree"],
+                    grad["Your Degree"] if "Your Degree" in grad else "",
                     grad["Anything else you'd like to include?"],
-                    grad["Your Major(s)"],
+                    grad["Your Major(s)"] if "Your Major(s)" in grad else "",
                     grad["Senior quote?"],
                     universityToId[grad["School"]],
                     ceremonyToId[grad["Ceremony Name"]],
                     grad["UUID"] if grad["UUID"] != "" else None,
                     convertDate(grad["Start Time UTC"]),
+                    IS_HIGH_SCHOOL,
                 ),
             )
 

@@ -12,11 +12,21 @@ load_dotenv()
 
 sched = BackgroundScheduler()
 sched.start()
+running = True
+
+
+def printNextJob():
+    jobs = sched.get_jobs()
+    if len(jobs) > 0:
+        print("Next job:", jobs[0])
+    else:
+        print("That's it!")
+        running = False
 
 
 def playAudio(filePath, name):
     print("Playing audio for {}".format(name))
-    print("Next job:", sched.get_jobs()[0])
+    printNextJob()
     audio = AudioSegment.from_mp3(filePath)
     play(audio)
 
@@ -44,7 +54,7 @@ connection = pymysql.connect(
 
 try:
     with connection.cursor() as cursor:
-        sql = "SELECT `id`, `name`, `email`, `timeslot` FROM `graduates` WHERE NOT `graduated` AND `ceremony`=24"
+        sql = "SELECT `id`, `name`, `email`, `timeslot` FROM `graduates` WHERE NOT `graduated`"
         cursor.execute(sql)
         graduates = cursor.fetchall()
         for grad in graduates:
@@ -59,10 +69,13 @@ try:
 finally:
     connection.close()
 
-print("Next job:", sched.get_jobs()[0])
-running = True
+
+printNextJob()
 while running:
     inp = input("=====\nEnter Q to quit\n=====\n")
     if inp == "Q" or inp == "q":
         running = False
         sched.shutdown(wait=False)
+
+if sched.running:
+    sched.shutdown(wait=False)

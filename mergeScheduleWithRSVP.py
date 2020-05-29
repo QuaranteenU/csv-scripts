@@ -115,7 +115,7 @@ with open(
 
 # use tabulate to save html school schedule
 with open("data/school-schedule.html", "w", encoding="utf-8") as schoolScheduleHTMLFile:
-    #schoolScheduleHTMLFile.write(tabulate(schoolOrder, headers="keys", tablefmt="html"))
+    # schoolScheduleHTMLFile.write(tabulate(schoolOrder, headers="keys", tablefmt="html"))
     print(schoolOrder)
     print("\n--> Saved FINAL school schedule utc HTML!")
 

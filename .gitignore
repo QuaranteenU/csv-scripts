@@ -5,3 +5,4 @@ convert
 *.csv
 *.txt
 .env
+.env.bak

@@ -14,7 +14,7 @@ connection = pymysql.connect(
     db=os.getenv("SQL_DB"),
     charset="utf8mb4",
     autocommit=True,
-    # init_command="SET SESSION time_zone='+00:00'",
+    init_command="SET SESSION time_zone='+00:00'",
     cursorclass=pymysql.cursors.DictCursor,
 )
 

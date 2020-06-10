@@ -36,7 +36,10 @@ def multikeysort(items, columns):
 
 
 # load data then sort by descending timezone and ascending school within timezone
-filename = input("Enter timezones filename (default: school timezones.csv): ") or "school timezones.csv"
+filename = (
+    input("Enter timezones filename (default: school timezones.csv): ")
+    or "school timezones.csv"
+)
 with open("data/{}".format(filename), encoding="utf-8") as schoolTimezonesFile:
     data = [
         {k: v if k == "School" else float(v) for k, v in row.items()}
@@ -222,7 +225,10 @@ if PRINT_TABULATE:
     print(tabulate(print_order, headers="keys"))
 
 # save utc student schedule
-filename = input("Enter student schedule filename (default: student schedule utc.csv): ") or "student schedule utc.csv"
+filename = (
+    input("Enter student schedule filename (default: student schedule utc.csv): ")
+    or "student schedule utc.csv"
+)
 with open(
     "data/{}".format(filename), "w", encoding="utf-8", newline=""
 ) as studentScheduleFile:
@@ -230,7 +236,7 @@ with open(
     writer = csv.DictWriter(studentScheduleFile, fieldnames=csvFields)
     writer.writeheader()
     writer.writerows(pretty_order)
-    print("\n--> Saved student schedule utc.csv!")
+    print("\n--> Saved {}".format(filename))
 
 pretty_order = [
     {

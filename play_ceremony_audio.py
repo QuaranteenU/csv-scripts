@@ -30,6 +30,7 @@ def playAudio(filePath, name):
     audio = AudioSegment.from_mp3(filePath)
     play(audio)
 
+
 filename = input("Enter data filename (default: contacts.csv): ") or "contacts.csv"
 with open("data/{}".format(filename), encoding="utf-8") as scheduleFile:
     graduates = [

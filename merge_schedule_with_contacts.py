@@ -6,9 +6,12 @@ from tabulate import tabulate
 
 PRINT_TABULATE = False
 SHOW_VIS = False
+SAVE_SCHOOL_CSV = True
+SAVE_SCHOOL_HTML = True
 
 # load clustered schedule (make sure you go make that first in google sheets)
-with open("data/student schedule utc clustered.csv", encoding="utf-8") as file:
+filename = input("Enter clustered schedule filename (default: student schedule utc clustered.csv): ") or "student schedule utc clustered.csv"
+with open("data/{}".format(filename), encoding="utf-8") as file:
     data = [
         {k: v for k, v in row.items()}
         for row in csv.DictReader(file, skipinitialspace=True)
@@ -28,7 +31,8 @@ if SHOW_VIS:
     plt.show()
 
 # load original RSVPs and make map keyed by email
-with open("data/HS - Master RSVPs.csv", encoding="utf-8") as rsvpFile:
+filename = input("Enter contacts filename (default: contacts.csv): ") or "contacts.csv"
+with open("data/{}".format(filename), encoding="utf-8") as rsvpFile:
     rsvps = [
         {k: v for k, v in row.items()}
         for row in csv.DictReader(rsvpFile, skipinitialspace=True)
@@ -103,21 +107,25 @@ schoolOrder = [
     for s in schoolOrder
 ]
 
-"""# save utc school schedule
-with open(
-    "data/FINAL school schedule utc.csv", "w", encoding="utf-8", newline=""
-) as schoolScheduleCSVFile:
-    csvFields = ["School", "Start Time"]
-    writer = csv.DictWriter(schoolScheduleCSVFile, fieldnames=csvFields)
-    writer.writeheader()
-    writer.writerows(schoolOrder)
-    print("\n--> Saved FINAL school schedule utc CSV!")"""
+if SAVE_SCHOOL_CSV:
+    # save utc school schedule
+    filename = input("Enter school schedule CSV filename (default: school schedule utc.csv): ") or "school schedule utc.csv"
+    with open(
+        "data/{}".format(filename), "w", encoding="utf-8", newline=""
+    ) as schoolScheduleCSVFile:
+        csvFields = ["School", "Start Time"]
+        writer = csv.DictWriter(schoolScheduleCSVFile, fieldnames=csvFields)
+        writer.writeheader()
+        writer.writerows(schoolOrder)
+        print("\n--> Saved FINAL school schedule utc CSV!")
 
-# use tabulate to save html school schedule
-with open("data/school-schedule.html", "w", encoding="utf-8") as schoolScheduleHTMLFile:
-    # schoolScheduleHTMLFile.write(tabulate(schoolOrder, headers="keys", tablefmt="html"))
-    print(schoolOrder)
-    print("\n--> Saved FINAL school schedule utc HTML!")
+if SAVE_SCHOOL_HTML:
+    # use tabulate to save html school schedule
+    filename = input("Enter school schedule HTML filename (default: school-schedule.html): ") or "school-schedule.html"
+    with open("data/{}".format(filename), "w", encoding="utf-8") as schoolScheduleHTMLFile:
+        schoolScheduleHTMLFile.write(tabulate(schoolOrder, headers="keys", tablefmt="html"))
+        print(schoolOrder)
+        print("\n--> Saved FINAL school schedule utc HTML!")
 
 # save final dataset
 finalData = []
@@ -130,8 +138,9 @@ for item in data:
     student["Approx Time Zone"] = item["Time Zone"]
     finalData.append(student)
 
+filename = input("Enter student schedule filename (default: student schedule utc.csv): ") or "student schedule utc.csv"
 with open(
-    "data/FINAL student schedule utc.csv", "w", encoding="utf-8", newline=""
+    "data/{}".format(filename), "w", encoding="utf-8", newline=""
 ) as studentScheduleFile:
     csvFields = list(finalData[0].keys())
     writer = csv.DictWriter(studentScheduleFile, fieldnames=csvFields)

@@ -30,8 +30,8 @@ def playAudio(filePath, name):
     audio = AudioSegment.from_mp3(filePath)
     play(audio)
 
-
-with open("data/final schedule with uuids.csv", encoding="utf-8") as scheduleFile:
+filename = input("Enter data filename (default: contacts.csv): ") or "contacts.csv"
+with open("data/{}".format(filename), encoding="utf-8") as scheduleFile:
     graduates = [
         {k: v for k, v in row.items()}
         for row in csv.DictReader(scheduleFile, skipinitialspace=True)
